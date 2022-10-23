@@ -1,0 +1,22 @@
+---
+random_seed: 0
+environment:
+  # Example map will be loaded if map_config_location is empty while random_generation is false
+  random_generation: false
+  map_config_location: map/levine2nd/levine2nd_config.yaml
+  render: false  # More samples will be taken for evaluation if render is false, which allows calculation of means and stdev (render should be False for proper evaluation)
+  render_mode: human_fast # human or human_fast
+# Agent and expert policies
+policy_type:
+  agent: 
+    downsample_method: simple
+    observation_shape: 108
+    # TODO: downsample option for CNN and ViT
+    model: mlp
+    hidden_dim: 256
+    learning_rate: 0.001
+  # TODO: YAML config for Transformer 
+  expert:
+    behavior: waypoint_follower
+
+
