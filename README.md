@@ -54,11 +54,6 @@ Execute the training script
 python train.py --algorithm=<algorithm name> --training_config=<yaml file location>
 ```
 
-Example:
-```bash
-python train.py --algorithm=dagger --training_config=il_config.yaml
-```
-
 
 ### Inference
 Navigate to the imitation learning folder
@@ -69,9 +64,4 @@ cd "imitation learning"
 Execute the inference script
 ```bash
 python inference.py --training_config=<yaml file location> --model_path=<model path>
-```
-
-Example:
-```bash
-python inference.py --training_config=il_config.yaml --model_path=logs/DAgger/DAgger_model.pkl
 ```
