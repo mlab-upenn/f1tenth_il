@@ -1,6 +1,0 @@
-{
-    "task_name": "ddqn",
-    "result_dir": "/home/zzjun/Documents/f1tenth_rl/examples/RL_example/result/ddqn",
-    "log_dir": "/home/zzjun/Documents/f1tenth_rl/examples/RL_example/result/ddqn/logs",
-    "model_dir": "/home/zzjun/Documents/f1tenth_rl/examples/RL_example/result/ddqn/models"
-}

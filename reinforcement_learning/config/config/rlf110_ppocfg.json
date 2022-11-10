@@ -1,6 +1,0 @@
-{
-    "task_name": "ppo",
-    "result_dir": "D:\\Projects\\il_bootstrap_rl\\f1tenth_rl\\examples\\RL_example\\config\\result\\ppo",
-    "log_dir": "D:\\Projects\\il_bootstrap_rl\\f1tenth_rl\\examples\\RL_example\\config\\result\\ppo\\logs",
-    "model_dir": "D:\\Projects\\il_bootstrap_rl\\f1tenth_rl\\examples\\RL_example\\evaluate_model"
-}
