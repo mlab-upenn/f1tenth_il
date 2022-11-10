@@ -14,7 +14,7 @@ git clone git@github.com:mlab-upenn/f1tenth_il.git
 
 Navigate to the root directory of this project
 ```bash
-cd f1tenth_imitation_learning
+cd f1tenth_il
 ```
 
 Create a new conda environment with Python 3.8
