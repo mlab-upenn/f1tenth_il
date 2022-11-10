@@ -97,8 +97,8 @@ def hg_dagger(seed, agent, expert, env, start_pose, observation_shape, downsampl
 
 
             # DELETE IT WHEN DOING SIM2REAL
-            # if log['Number of Expert Queries'][-1] > 3000:
-            #     break
+            if log['Number of Expert Queries'][-1] > 3000:
+                break
 
 
         
@@ -138,10 +138,10 @@ def hg_dagger(seed, agent, expert, env, start_pose, observation_shape, downsampl
                 
                 expert_action = np.array([[curr_expert_steer, curr_expert_speed]])
                 agent_action_raw = agent.get_action(downsampled_scan)
-                agent_action = np.expand_dims(agent_action_raw, axis=0)
+                agent_action = np.array([[agent_action_raw, 3.0]])
 
                 curr_agent_steer = agent_action_raw[0]
-                curr_agent_speed = agent_action_raw[1]
+                curr_agent_speed = 3.0
 
 
                 # Decide if agent or expert has control
@@ -156,12 +156,14 @@ def hg_dagger(seed, agent, expert, env, start_pose, observation_shape, downsampl
                     """
                     curr_action = expert_action
 
+                    processed_steer = (curr_expert_steer / 2) + 0.5
+
                     traj["observs"].append(observ)
                     traj["scans"].append(downsampled_scan)
                     traj["poses_x"].append(observ["poses_x"][0])
                     traj["poses_y"].append(observ["poses_y"][0])
                     traj["poses_theta"].append(observ["poses_theta"][0])
-                    traj["actions"].append(curr_action)
+                    traj["actions"].append(processed_steer)
                     traj["reward"] += step_reward
                 else:
                     """

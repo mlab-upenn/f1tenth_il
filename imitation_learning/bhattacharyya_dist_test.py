@@ -3,13 +3,20 @@ import numpy as np
 import yaml
 import argparse
 import gym
-import math
+import json
+
+import utils.downsampling as downsampling
+
 
 from dictances import bhattacharyya, bhattacharyya_coefficient
 from policies.agents.agent_mlp import AgentPolicyMLP
 from policies.experts.expert_waypoint_follower import ExpertWaypointFollower
 import utils.env_utils as env_utils
 
+
+from ppo_continuous import PPO
+
+import math
 
 
 def mean( hist ):
@@ -41,22 +48,36 @@ def bhatta ( hist1,  hist2):
 
 
 
+episode = 20000
 
 # max_step_num = 1000
-
+kwargs = json.load(open('rlf110_ppo_continuouscfg.json'))
+kwargs['state_dim'] = 54
+kwargs['action_dim'] = 1
+kwargs['env_with_Dead'] = False
 # Load agent model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-bc_agent = AgentPolicyMLP(1080, 256, 2, 0.001, device)
-bc_agent.load_state_dict(torch.load('logs/Sim Models for Bhattacharyya Dist Test/BehavioralCloning/BehavioralCloning_model.pkl'))
 
-dagger_agent = AgentPolicyMLP(1080, 256, 2, 0.001, device)
-dagger_agent.load_state_dict(torch.load('logs/Sim Models for Bhattacharyya Dist Test/DAgger/DAgger_svidx_0_dist_249_expsamp_823.pkl'))
 
-hgdagger_agent = AgentPolicyMLP(1080, 256, 2, 0.001, device)
-hgdagger_agent.load_state_dict(torch.load('logs/Sim Models for Bhattacharyya Dist Test/HGDAgger/HGDAgger_svidx_253_dist_123_expsamp_4548.pkl'))
+ppo_stock = PPO(**kwargs)
+ppo_stock.critic.load_state_dict(torch.load("./ppo_stock/ppo_critic{}.pth".format(episode)))
+ppo_stock.actor.load_state_dict(torch.load("./ppo_stock/ppo_actor{}.pth".format(episode)))
 
-eil_agent = AgentPolicyMLP(1080, 256, 2, 0.001, device)
-eil_agent.load_state_dict(torch.load('logs/Sim Models for Bhattacharyya Dist Test/EIL/EIL_svidx_247_dist_125_expsamp_8376.pkl'))
+ppo_bc = PPO(**kwargs)
+ppo_bc.critic.load_state_dict(torch.load("./ppo_bc/ppo_critic{}.pth".format(episode)))
+ppo_bc.actor.load_state_dict(torch.load("./ppo_bc/ppo_actor{}.pth".format(episode)))
+
+ppo_dagger = PPO(**kwargs)
+ppo_dagger.critic.load_state_dict(torch.load("./ppo_dagger/ppo_critic{}.pth".format(episode)))
+ppo_dagger.actor.load_state_dict(torch.load("./ppo_dagger/ppo_actor{}.pth".format(episode)))
+
+ppo_hg_dagger = PPO(**kwargs)
+ppo_hg_dagger.critic.load_state_dict(torch.load("./ppo_hgdagger/ppo_critic{}.pth".format(episode)))
+ppo_hg_dagger.actor.load_state_dict(torch.load("./ppo_hgdagger/ppo_actor{}.pth".format(episode)))
+
+ppo_eil = PPO(**kwargs)
+ppo_eil.critic.load_state_dict(torch.load("./ppo_eil/ppo_critic{}.pth".format(episode)))
+ppo_eil.actor.load_state_dict(torch.load("./ppo_eil/ppo_actor{}.pth".format(episode)))
 
 # Initialize dictionaries
 # state_dict = {'idx': [],
@@ -70,30 +91,33 @@ eil_agent.load_state_dict(torch.load('logs/Sim Models for Bhattacharyya Dist Tes
 expert_steer_dict = {}
 
 
-expert_steer_list = []
+stock_ppo_steer_dict = {}
 
 # bc_agent_speed_dict = {}
 
-bc_agent_steer_dict = {}
+bc_ppo_steer_dict = {}
 
 # dagger_agent_speed_dict = {}
 
-dagger_agent_steer_dict = {}
+dagger_ppo_steer_dict = {}
 
 # hgdagger_agent_speed_dict = {}
 
-hgdagger_agent_steer_dict = {}
+hgdagger_ppo_steer_dict = {}
 
 # eil_agent_speed_dict = {}
 
-eil_agent_steer_dict = {}
+eil_ppo_steer_dict = {}
+
 
 
 expert_steer_list = []
+stock_ppo_steer_list = []
 bc_agent_steer_list = []
 dagger_agent_steer_list = []
 hgdagger_agent_steer_list = []
 eil_agent_steer_list = []
+
 
 with open('map/gene_eval_map/config_gene_map.yaml') as file:
     map_conf_dict = yaml.load(file, Loader=yaml.FullLoader)
@@ -112,12 +136,14 @@ observ, step_reward, done, info = env.reset(start_pose)
 curr_idx = 0
 while not done:
 # for _ in range(max_step_num):
-    curr_idx += 1
+    # state_dict['idx'].append(i)
 
     poses_x = observ["poses_x"][0]
     poses_y = observ["poses_y"][0]
     poses_theta = observ["poses_theta"][0]
-    scan = observ["scans"][0]
+    scans = observ["scans"][0]
+
+    processed_lidar_scan = downsampling.downsample(scans, 54, 'simple')
 
     # Get expert action
     curr_expert_speed, curr_expert_steer = expert.plan(poses_x, poses_y, poses_theta, tlad, vgain)
@@ -128,47 +154,36 @@ while not done:
     # expert_steer_dict['idx'].append(curr_idx)
     # expert_steer_dict['steer'].append(curr_expert_steer)
     expert_steer_dict[str(curr_idx)] = curr_expert_steer
+
     expert_steer_list.append(np.abs(curr_expert_steer))
 
     # Concat expert action
     expert_action = np.array([[curr_expert_steer, curr_expert_speed]])
 
     # Get agent action
-    bc_agent_action = bc_agent.get_action(scan)
-    bc_agent_steer, bc_agent_speed = float(bc_agent_action[0]), bc_agent_action[1]
+    stock_a, stock_logprob_a = ppo_stock.evaluate(processed_lidar_scan)
     # bc_agent_speed_dict['idx'].append(curr_idx)
     # bc_agent_speed_dict['speed'].append(bc_agent_speed)
     # bc_agent_steer_dict['idx'].append(curr_idx)
     # bc_agent_steer_dict['steer'].append(bc_agent_steer)
-    bc_agent_steer_dict[str(curr_idx)] = float(bc_agent_steer)
-    bc_agent_steer_list.append(float(bc_agent_steer))
+    stock_ppo_steer_dict[str(curr_idx)] = 2.0 * (stock_a - 0.5) * 1.0
+    stock_ppo_steer_list.append(2.0 * (stock_a - 0.5) * 1.0)
 
-    dagger_agent_action = dagger_agent.get_action(scan)
-    dagger_agent_steer, dagger_agent_speed = float(dagger_agent_action[0]), dagger_agent_action[1]
-    # dagger_agent_speed_dict['idx'].append(curr_idx)
-    # dagger_agent_speed_dict['speed'].append(dagger_agent_speed)
-    # dagger_agent_steer_dict['idx'].append(curr_idx)
-    # dagger_agent_steer_dict['steer'].append(dagger_agent_steer)
-    dagger_agent_steer_dict[str(curr_idx)] = float(dagger_agent_steer)
-    dagger_agent_steer_list.append(float(dagger_agent_steer))
+    bc_a, bc_logprob_a = ppo_bc.evaluate(processed_lidar_scan)
+    bc_ppo_steer_dict[str(curr_idx)] = 2.0 * (bc_a - 0.5) * 1.0
+    bc_agent_steer_list.append(2.0 * (bc_a - 0.5) * 1.0)
 
-    hgdagger_agent_action = hgdagger_agent.get_action(scan)
-    hgdagger_agent_steer, hgdagger_agent_speed = float(hgdagger_agent_action[0]), hgdagger_agent_action[1]
-    # hgdagger_agent_speed_dict['idx'].append(curr_idx)
-    # hgdagger_agent_speed_dict['speed'].append(hgdagger_agent_speed)
-    # hgdagger_agent_steer_dict['idx'].append(curr_idx)
-    # hgdagger_agent_steer_dict['steer'].append(hgdagger_agent_steer)
-    hgdagger_agent_steer_dict[str(curr_idx)] = float(hgdagger_agent_steer)
-    hgdagger_agent_steer_list.append(float(hgdagger_agent_steer))
+    dagger_a, dagger_logprob_a = ppo_dagger.evaluate(processed_lidar_scan)
+    dagger_ppo_steer_dict[str(curr_idx)] = 2.0 * (dagger_a - 0.5) * 1.0
+    dagger_agent_steer_list.append(2.0 * (dagger_a - 0.5) * 1.0)
 
-    eil_agent_action = eil_agent.get_action(scan)
-    eil_agent_steer, eil_agent_speed = float(eil_agent_action[0]), eil_agent_action[1]
-    # eil_agent_speed_dict['idx'].append(curr_idx)
-    # eil_agent_speed_dict['speed'].append(eil_agent_speed)
-    # eil_agent_steer_dict['idx'].append(curr_idx)
-    # eil_agent_steer_dict['steer'].append(eil_agent_steer)
-    eil_agent_steer_dict[str(curr_idx)] = float(eil_agent_steer)
-    eil_agent_steer_list.append(float(eil_agent_steer))
+    hgdagger_a, hgdagger_logprob_a = ppo_hg_dagger.evaluate(processed_lidar_scan)
+    hgdagger_ppo_steer_dict[str(curr_idx)] = 2.0 * (hgdagger_a - 0.5) * 1.0
+    hgdagger_agent_steer_list.append(2.0 * (hgdagger_a - 0.5) * 1.0)
+
+    eil_a, eil_logprob_a = ppo_eil.evaluate(processed_lidar_scan)
+    eil_ppo_steer_dict[str(curr_idx)] = 2.0 * (eil_a - 0.5) * 1.0
+    eil_agent_steer_list.append(2.0 * (eil_a - 0.5) * 1.0)
 
 
 
@@ -176,27 +191,28 @@ while not done:
 
     # Step environment
     observ, step_reward, done, info = env.step(expert_action)
-    env.render(mode='human_fast')
+    # env.render(mode='human_fast')
 
     if env.lap_counts[0] > 0:
         break
 
 # Calculate bhattacharyya distance
-print(type(expert_steer_dict['1']))
-print(type(bc_agent_steer_dict['1']))
 
-# bc_bhattacharyya = bhattacharyya(expert_steer_dict, bc_agent_steer_dict)
-# dagger_bhattaryya = bhattacharyya(expert_steer_dict, dagger_agent_steer_dict)
-# hgdagger_bhattacharyya = bhattacharyya(expert_steer_dict, hgdagger_agent_steer_dict)
-# eil_bhattacharyya = bhattacharyya(expert_steer_dict, eil_agent_steer_dict)
+# stock_bhattacharyya = bhattacharyya(expert_steer_dict, stock_ppo_steer_dict)
+# bc_bhattacharyya = bhattacharyya(expert_steer_dict, bc_ppo_steer_dict)
+# dagger_bhattaryya = bhattacharyya(expert_steer_dict, dagger_ppo_steer_dict)
+# hgdagger_bhattacharyya = bhattacharyya(expert_steer_dict, hgdagger_ppo_steer_dict)
+# eil_bhattacharyya = bhattacharyya(expert_steer_dict, eil_ppo_steer_dict)
 
-bc_bhattacharyya = bhatta(expert_steer_list[300:350], bc_agent_steer_list[300:350])
-dagger_bhattaryya = bhatta(expert_steer_list[300:350], dagger_agent_steer_list[300:350])
-hgdagger_bhattacharyya = bhatta(expert_steer_list[300:350], hgdagger_agent_steer_list[300:350])
-eil_bhattacharyya = bhatta(expert_steer_list[300:350], eil_agent_steer_list[300:350])
+stock_bhattacharyya = bhatta(expert_steer_list, stock_ppo_steer_list)
+bc_bhattacharyya = bhatta(expert_steer_list, bc_agent_steer_list)
+dagger_bhattaryya = bhatta(expert_steer_list, dagger_agent_steer_list)
+hgdagger_bhattacharyya = bhatta(expert_steer_list, hgdagger_agent_steer_list)
+eil_bhattacharyya = bhatta(expert_steer_list[300:500], eil_agent_steer_list[300:500])
 
-
-print('BC Bhattacharyya Metric: ', bc_bhattacharyya)
-print('Dagger Bhattacharyya Metric: ', dagger_bhattaryya)
-print('HG-Dagger Bhattacharyya Metric: ', hgdagger_bhattacharyya)
-print('EIL Bhattacharyya Metric: ', eil_bhattacharyya)
+print('Stock PPO Bhattacharyya Metric: ', stock_bhattacharyya)
+print('BC+PPO Bhattacharyya Metric: ', bc_bhattacharyya)
+print('Dagger+PPO Bhattacharyya Metric: ', dagger_bhattaryya)
+print('HG-Dagger+PPO Bhattacharyya Metric: ', hgdagger_bhattacharyya)
+print('EIL+PPO Bhattacharyya Metric: ', eil_bhattacharyya)
+                

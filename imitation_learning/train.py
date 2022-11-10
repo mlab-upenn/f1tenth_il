@@ -54,7 +54,7 @@ def initialization(il_config):
     if il_config['policy_type']['agent']['model'] == 'mlp':
         agent = AgentPolicyMLP(il_config['policy_type']['agent']['observation_shape'], \
                                 il_config['policy_type']['agent']['hidden_dim'], \
-                                2, \
+                                1, \
                                 il_config['policy_type']['agent']['learning_rate'], \
                                 device)
     else:

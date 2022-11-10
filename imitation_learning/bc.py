@@ -101,8 +101,8 @@ def bc(seed, agent, expert, env, start_pose, observation_shape, downsampling_met
             print("- "*15)
 
             # DELETE IT WHEN DOING SIM2REAL
-            # if log['Number of Samples'][-1] > 3000:
-            #     break
+            if log['Number of Samples'][-1] > 3000:
+                break
         
         if iter == n_iter:
             break
@@ -152,7 +152,9 @@ def bc(seed, agent, expert, env, start_pose, observation_shape, downsampling_met
             if render:
                 env.render(mode=render_mode)
 
-            traj["actions"].append(action)
+            processed_steer = (steer / 2) + 0.5
+
+            traj["actions"].append(processed_steer)
             traj["reward"] += step_reward
 
             if done:

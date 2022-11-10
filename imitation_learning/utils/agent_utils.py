@@ -54,13 +54,17 @@ def sample_traj(env, policy, start_pose, max_traj_len, observation_shape=108, do
 
         action = policy.get_action(scan)
 
+        speed = 3.0
+
+        action_expand = np.array([[action, speed]])
+
         if for_eval:
-            curr_velocity = action[1]
+            curr_velocity = speed
             avg_velocity = (avg_velocity * action_count + curr_velocity) / (action_count + 1)
             action_count += 1
 
         # TODO: for multi-agent the dimension expansion need to be changed
-        action_expand = np.expand_dims(action, axis=0)
+        # action_expand = np.expand_dims(action_concat, axis=0)
         # print("action_expand shape: ", action_expand.shape)
         observ, reward, done, _ = env.step(action_expand)
 

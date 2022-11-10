@@ -17,6 +17,21 @@ from policies.agents.agent_mlp import AgentPolicyMLP
 
 from pathlib import Path
 
+from ppo_continuous import PPO
+
+
+# Load PPO Agent
+kwargs = json.load(open('rlf110_ppo_continuouscfg.json'))
+kwargs['state_dim'] = 54
+kwargs['action_dim'] = 1
+kwargs['env_with_Dead'] = False
+agent = PPO(**kwargs)
+
+agent.load(20000)
+speed = 3.0
+
+
+"""
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -55,7 +70,7 @@ fast_eil_agent.load_state_dict(torch.load('logs/Sim Model/Fast/EIL_model.pkl'))
 # model_dict = {"Slow BC": slow_bc_agent, "Slow DAgger": slow_dagger_agent, "Slow HGDAgger": slow_hg_dagger_agent, "Slow EIL": slow_eil_agent,\
 #               "Normal BC": normal_bc_agent, "Normal DAgger": normal_dagger_agent, "Normal HGDAgger": normal_hg_dagger_agent, "Normal EIL": normal_eil_agent,\
 #                 "Fast BC": fast_bc_agent, "Fast DAgger": fast_dagger_agent, "Fast HGDAgger": fast_hg_dagger_agent, "Fast EIL": fast_eil_agent}
-
+"""
 with open('map/gene_eval_map/gene_eval_map_config.yaml') as file:
     map_conf_dict = yaml.load(file, Loader=yaml.FullLoader)
 
@@ -67,6 +82,8 @@ start_pose = np.array([[map_conf.sx, map_conf.sy, map_conf.stheta]])
 
 # for key, agent in model_dict.items():
 obs, step_reward, done, info = env.reset(start_pose)
+
+
 
 
 
@@ -86,19 +103,24 @@ if env.renderer is None:
     env.render()
 
 while not done:
-    raw_lidar_scan = obs["scans"][0]
-    processed_lidar_scan = downsampling.downsample_old(raw_lidar_scan, 108, 'simple')
+    scans = obs["scans"][0]
+    processed_lidar_scan = downsampling.downsample(scans, 54, 'simple')
 
-    action = normal_eil_agent.get_action(processed_lidar_scan)
-    action_expand = np.expand_dims(action, axis=0)
-    obs, reward, done, _ = env.step(action_expand)
+    a, logprob_a = agent.evaluate(processed_lidar_scan)
+    steering_angle = 2.0 * (a - 0.5) * 1.0
+    # steering_angle = float(steering_angle[0])
+    # steering_angle = np.clip(steering_angle, -1.0, 1.0)
+
+    action= np.array([[steering_angle, speed]])
+
+    obs, reward, done, _ = env.step(action)
 
 
     poses_x = obs["poses_x"][0]
     poses_y = obs["poses_y"][0]
 
 
-    curr_speed = action[1]
+    curr_speed = speed
     avg_speed = (avg_speed * num_of_steps + curr_speed) / (num_of_steps + 1)
     num_of_steps += 1
     curr_traveled_dist = avg_speed * num_of_steps * 0.01
@@ -110,25 +132,29 @@ while not done:
     log['Y Position'].append(poses_y)
 
 
-    env.render(mode='human')
+    env.render(mode='human_fast')
+
+    if env.lap_counts[0] > 0:
+        break
 
 curr_lap_counts = env.lap_counts[0]
 curr_lap_times = env.lap_times[0]
 
 
 
-algo_name = "bc"
-path = "gene_exp/"
-os.makedirs(os.path.dirname(path), exist_ok=True)
+# algo_name = "bc"
+# path = "gene_exp/"
+# os.makedirs(os.path.dirname(path), exist_ok=True)
 
 # Save log
-df = pd.DataFrame(log)
-log_path = Path(path + f'{algo_name}_gene_exp.csv')
-log_path.parent.mkdir(parents=True, exist_ok=True)  
-df.to_csv(log_path, index=False)
+# df = pd.DataFrame(log)
+# log_path = Path(path + f'{algo_name}_gene_exp.csv')
+# log_path.parent.mkdir(parents=True, exist_ok=True)  
+# df.to_csv(log_path, index=False)
 
 print("-"*30)
 # print("Evaluated Model: ", key)
 print("Total Lap Counts: ", curr_lap_counts)
 print("Total Lap Times: ", curr_lap_times)
 print("Elapsed Time for 1 Round: ", curr_lap_times/curr_lap_counts)
+print("Traveled Distance: ", log['Distance Traveled'][-1])

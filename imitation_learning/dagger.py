@@ -95,8 +95,8 @@ def dagger(seed, agent, expert, env, start_pose, observation_shape, downsampling
             print("- "*15)
 
             # DELETE IT WHEN DOING SIM2REAL
-            # if log['Number of Samples'][-1] > 3000:
-            #     break
+            if log['Number of Samples'][-1] > 3000:
+                break
 
 
         if iter == n_iter:
@@ -135,7 +135,9 @@ def dagger(seed, agent, expert, env, start_pose, observation_shape, downsampling
                 curr_expert_speed, curr_expert_steer = expert.plan(curr_poses_x, curr_poses_y, curr_poses_theta, tlad, vgain)
                 curr_expert_action = np.array([[curr_expert_steer, curr_expert_speed]])
                 # Replace original action with expert labeled action
-                data["actions"][idx] = curr_expert_action
+
+                processed_steer = (curr_expert_steer / 2) + 0.5
+                data["actions"][idx] = processed_steer
 
                 num_of_expert_queries += 1
 

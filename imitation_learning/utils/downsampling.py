@@ -12,4 +12,5 @@ def downsample(data, observation_shape, downsampling_method):
         processed_data = data[::obs_gap]
     else:
         processed_data = data
+    # return processed_data
     return processed_data
