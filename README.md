@@ -9,7 +9,7 @@ You can find the documentation of the F1TENTH gym environment [here](https://f1t
 ## Quickstart
 Clone this repository
 ```bash
-git clone https://github.com/M4D-SC1ENTIST/f1tenth_imitation_learning.git
+git clone git@github.com:mlab-upenn/f1tenth_il.git
 ```
 
 Navigate to the root directory of this project
