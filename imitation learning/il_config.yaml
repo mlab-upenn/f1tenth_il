@@ -10,10 +10,10 @@ environment:
 policy_type:
   agent: 
     downsample_method: simple
-    observation_shape: 108
+    observation_shape: 1080
     # TODO: downsample option for CNN and ViT
     model: mlp
-    hidden_dim: 128
+    hidden_dim: 256
     learning_rate: 0.001
   # TODO: YAML config for Transformer 
   expert:
