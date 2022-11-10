@@ -44,7 +44,7 @@ pip install -r requirements.txt
 ### Training
 Navigate to the imitation learning folder
 ```bash
-cd "imitation learning"
+cd imitation_learning
 ```
 
 Execute the training script
@@ -61,7 +61,7 @@ python train.py --algorithm=hg-dagger --training_config=il_config.yaml
 ### Inference
 Navigate to the imitation learning folder
 ```bash
-cd "imitation learning"
+cd imitation_learning
 ```
 
 Execute the inference script
