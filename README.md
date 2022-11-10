@@ -1,5 +1,3 @@
-![Python 3.8 3.9](https://github.com/f1tenth/f1tenth_gym/actions/workflows/ci.yml/badge.svg)
-![Docker](https://github.com/f1tenth/f1tenth_gym/actions/workflows/docker.yml/badge.svg)
 # F1TENTH Imitation Learning
 
 This repository is forked from [f1tenth_gym](https://github.com/f1tenth/f1tenth_gym) for developing imitation learning methods on F1TENTH platform.
@@ -54,6 +52,11 @@ Execute the training script
 python train.py --algorithm=<algorithm name> --training_config=<yaml file location>
 ```
 
+Example:
+```bash
+python train.py --algorithm=hg-dagger --training_config=il_config.yaml
+```
+
 
 ### Inference
 Navigate to the imitation learning folder
@@ -64,4 +67,9 @@ cd "imitation learning"
 Execute the inference script
 ```bash
 python inference.py --training_config=<yaml file location> --model_path=<model path>
+```
+
+Example:
+```bash
+python inference.py --training_config=il_config.yaml --model_path=logs/HGDAgger_model.pkl
 ```

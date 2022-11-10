@@ -12,7 +12,6 @@ import utils.env_utils as env_utils
 from bc import bc
 from dagger import dagger
 from hg_dagger import hg_dagger
-from eil import eil
 
 
 def process_parsed_args():
@@ -88,10 +87,8 @@ def train(seed, agent, expert, env, start_pose, observation_shape, downsampling_
         dagger(seed, agent, expert, env, start_pose, observation_shape, downsampling_method, render, render_mode)
     elif il_algo == 'hg-dagger':
         hg_dagger(seed, agent, expert, env, start_pose, observation_shape, downsampling_method, render, render_mode)
-    elif il_algo == 'eil':
-        eil(seed, agent, expert, env, start_pose, observation_shape, downsampling_method, render, render_mode)
     else:
-        # TODO: Implement other IL algorithms (BC, HG DAgger, EIL, etc.)
+        # TODO: Implement other IL algorithms (BC, HG DAgger, etc.)
         pass
 
 

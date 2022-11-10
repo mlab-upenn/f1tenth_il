@@ -101,8 +101,8 @@ def bc(seed, agent, expert, env, start_pose, observation_shape, downsampling_met
             print("- "*15)
 
             # DELETE IT WHEN DOING SIM2REAL
-            if log['Number of Samples'][-1] > 3000:
-                break
+            # if log['Number of Samples'][-1] > 3000:
+            #     break
         
         if iter == n_iter:
             break
