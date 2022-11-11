@@ -72,7 +72,7 @@ python inference.py --training_config=<yaml file location> --model_path=<model p
 
 - Example:
 ```bash
-python inference.py --training_config=il_config.yaml --model_path=logs/HGDAgger/HGDAgger_svidx_0_dist_312_expsamp_5846.pkl
+python inference.py --training_config=il_config.yaml --model_path=logs/HGDAgger_svidx_1_dist_300_expsamp_36761.pkl
 ```
 
 ### Bootstrapping PPO

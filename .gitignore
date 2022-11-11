@@ -9,6 +9,4 @@ gym/f110_gym/unittest/centerline/
 docs/_build/
 *.mypy_cache/
 flycheck_*
-logs/
 reinforcement_learning/runs/
-reinforcement_learning/initial_models/
