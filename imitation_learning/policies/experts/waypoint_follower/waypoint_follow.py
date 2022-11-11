@@ -167,7 +167,13 @@ class PurePursuitPlanner:
 
         #points = self.waypoints
 
-        points = np.vstack((self.waypoints[:, self.conf.wpt_xind], self.waypoints[:, self.conf.wpt_yind])).T
+        wpt_xind = self.waypoints[:, self.conf.wpt_xind]
+        wpt_yind = self.waypoints[:, self.conf.wpt_yind]
+
+        wpt_xind_reverse = wpt_xind[::-1]
+        wpt_yind_reverse = wpt_yind[::-1]
+
+        points = np.vstack((wpt_xind_reverse, wpt_yind_reverse)).T
         
         scaled_points = 50.*points
 
@@ -183,7 +189,14 @@ class PurePursuitPlanner:
         """
         gets the current waypoint to follow
         """
-        wpts = np.vstack((self.waypoints[:, self.conf.wpt_xind], self.waypoints[:, self.conf.wpt_yind])).T
+
+        wpt_xind = self.waypoints[:, self.conf.wpt_xind]
+        wpt_yind = self.waypoints[:, self.conf.wpt_yind]
+
+        wpt_xind_reverse = wpt_xind[::-1]
+        wpt_yind_reverse = wpt_yind[::-1]
+
+        wpts = np.vstack((wpt_xind_reverse, wpt_yind_reverse)).T
         nearest_point, nearest_dist, t, i = nearest_point_on_trajectory(position, wpts)
         if nearest_dist < lookahead_distance:
             lookahead_point, i2, t2 = first_point_on_trajectory_intersecting_circle(position, lookahead_distance, wpts, i+t, wrap=True)
@@ -222,7 +235,7 @@ class PurePursuitPlanner:
         # speed = speed * 0.3125
 
         # Change top speed to 3m/s
-        # speed = speed * 0.375
+        speed = speed * 0.375
 
         # Change top speed to 3.5m/s
         # speed = speed * 0.4375

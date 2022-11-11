@@ -3,7 +3,7 @@ random_seed: 0
 environment:
   # Example map will be loaded if map_config_location is empty while random_generation is false
   random_generation: false
-  map_config_location: map/levine2nd/levine2nd_config.yaml
+  map_config_location: map/example_map/config_example_map.yaml
   render: false  # More samples will be taken for evaluation if render is false, which allows calculation of means and stdev (render should be False for proper evaluation)
   render_mode: human_fast # human or human_fast
 # Agent and expert policies

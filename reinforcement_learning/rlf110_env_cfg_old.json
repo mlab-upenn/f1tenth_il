@@ -2,7 +2,7 @@
     "speed": 3,
     "obs_shape": 54,
     "continuous_action": true,
-    "sim_cfg_file": "map/example_map/config_example_map.yaml",
+    "sim_cfg_file": "D:\\Projects\\f1tenth_il\\reinforcement_learning\\maps\\config_example_map.yaml",
     "limited_time": false,
     "no_terminal": false,
     "env_time_limit": 0,

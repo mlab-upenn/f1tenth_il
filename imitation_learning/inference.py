@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if model_type == 'mlp':
         agent = AgentPolicyMLP(il_config['policy_type']['agent']['observation_shape'], \
                                 il_config['policy_type']['agent']['hidden_dim'], \
-                                2, \
+                                1, \
                                 il_config['policy_type']['agent']['learning_rate'], \
                                 device)
     else:
@@ -83,9 +83,10 @@ if __name__ == '__main__':
         raw_lidar_scan = obs["scans"][0]
         processed_lidar_scan = downsampling.downsample(raw_lidar_scan, observation_shape, downsampling_method)
 
-        action = agent.get_action(processed_lidar_scan)
-        action_expand = np.expand_dims(action, axis=0)
-        obs, reward, done, _ = env.step(action_expand)
+        action_raw = agent.get_action(processed_lidar_scan)
+        action = np.array([[action_raw, 3.0]])
+        # action_expand = np.expand_dims(action, axis=0)
+        obs, reward, done, _ = env.step(action)
 
         print("step_reward: ", step_reward)
 

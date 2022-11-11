@@ -18,7 +18,7 @@ from argparse import Namespace
 
 from agent_mlp import AgentPolicyMLP
 
-bootstrap_model = 'initial_models/HGDAgger_svidx_2_dist_125_expsamp_4599.pkl'
+bootstrap_model = 'initial_models/HGDAgger_svidx_1_dist_300_expsamp_36761.pkl'
 
 '''Env Setting'''
 # with open('./config_example_map.yaml') as file:
@@ -35,7 +35,8 @@ bootstrap_model = 'initial_models/HGDAgger_svidx_2_dist_125_expsamp_4599.pkl'
 # print('continuous_action', continuous_action)
 # env.f110.add_render_callback(render_callback)
 
-env_cfg = json.load(open(os.path.join(path_filler('config'), 'rlf110_env_cfg.json')))
+# env_cfg = json.load(open(os.path.join(path_filler('config'), 'rlf110_env_cfg.json')))
+env_cfg = json.load(open('rlf110_env_cfg.json'))
 env_cfg['dictObs'] = False
 env = create_f110env(**env_cfg)
 eval_env = create_f110env(**env_cfg)
@@ -176,8 +177,7 @@ def main():
                 score = evaluate_policy(eval_env, model, True, max_steps, max_action)
                 if write:
                     writer.add_scalar('ep_r_insteps', score, global_step=total_steps)
-                print('EnvName:', envname, 'seed:', random_seed, 'steps: {}k'.format(int(total_steps / 1000)), 'score:',
-                      score)
+                print('EnvName:', envname, 'seed:', random_seed, 'score:', score)
             total_steps += 1
 
             if total_steps % save_interval == 0:

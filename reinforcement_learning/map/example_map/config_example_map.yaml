@@ -10,7 +10,7 @@ map_ext: '.png'
 # starting pose for map
 sx: 0.7
 sy: 0.0
-stheta: -1.37079632679
+stheta: 1.37079632679
 
 # raceline path and indices
 wpt_path: './map/example_map/example_waypoints.csv'
