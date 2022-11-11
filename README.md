@@ -1,8 +1,7 @@
 # F1TENTH Imitation Learning
 
-This repository is forked from [f1tenth_gym](https://github.com/f1tenth/f1tenth_gym) for developing imitation learning methods on F1TENTH platform.
-
-You can find the documentation of the F1TENTH gym environment [here](https://f1tenth-gym.readthedocs.io/en/latest/).
+This repository contains code associated with [A Benchmark Comparison of Imitation Learning-based Control Policies for Autonomous Racing
+](https://arxiv.org/abs/2209.15073)
 
 ## Quickstart
 - Clone this repository
