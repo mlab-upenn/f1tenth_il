@@ -18,7 +18,7 @@ from argparse import Namespace
 
 from agent_mlp import AgentPolicyMLP
 
-bootstrap_model = 'initial_models/HGDAgger_svidx_0_dist_312_expsamp_5846.pkl'
+bootstrap_model = 'initial_models/HGDAgger_svidx_2_dist_125_expsamp_4599.pkl'
 
 '''Env Setting'''
 # with open('./config_example_map.yaml') as file:

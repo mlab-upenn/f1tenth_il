@@ -77,6 +77,6 @@ python inference.py --training_config=il_config.yaml --model_path=logs/HGDAgger/
 
 ### Bootstrapping PPO
 - Train an initial model following the steps in the [Training](#training) section
-- Copy the model from ```imitation_learning/logs/<algorithm name>``` to ```reinforcement_learning/initial_models```
+- Copy the model from ```imitation_learning/logs/<algorithm name>``` to ```reinforcement_learning```
 - Edit line 21 of ```reinforcement_learning/train_f1tenth_ppo.py``` to the proper directory of the initial model
 
