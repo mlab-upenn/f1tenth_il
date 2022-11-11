@@ -7,7 +7,7 @@ You can find the documentation of the F1TENTH gym environment [here](https://f1t
 ## Quickstart
 Clone this repository
 ```bash
-git clone git@github.com:mlab-upenn/f1tenth_il.git
+git clone https://github.com/mlab-upenn/f1tenth_il.git
 ```
 
 Navigate to the root directory of this project
